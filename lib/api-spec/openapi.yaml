@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: reservations
+    description: Railway ticket reservation operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,83 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /reservations:
+    get:
+      operationId: getReservations
+      tags: [reservations]
+      summary: Get confirmed passengers and the waiting list
+      responses:
+        "200":
+          description: Current reservation board
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationBoard"
+    post:
+      operationId: bookReservation
+      tags: [reservations]
+      summary: Book a ticket or join the waiting list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "400":
+          description: Invalid passenger details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /reservations/{pnr}:
+    parameters:
+      - name: pnr
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+    get:
+      operationId: getReservationByPnr
+      tags: [reservations]
+      summary: Search for a reservation by PNR
+      responses:
+        "200":
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "404":
+          description: PNR was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: cancelReservation
+      tags: [reservations]
+      summary: Cancel a reservation by PNR
+      responses:
+        "200":
+          description: Reservation cancelled, with any promoted passenger
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationResult"
+        "404":
+          description: PNR was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +112,75 @@ components:
           type: string
       required:
         - status
+    ReservationStatus:
+      type: string
+      enum: [CONFIRMED, WAITING]
+    Reservation:
+      type: object
+      required: [pnr, passengerName, passengerAge, status]
+      properties:
+        pnr:
+          type: string
+        passengerName:
+          type: string
+        passengerAge:
+          type: integer
+        status:
+          $ref: "#/components/schemas/ReservationStatus"
+        seatNumber:
+          type: [integer, "null"]
+        queuePosition:
+          type: [integer, "null"]
+    ReservationInput:
+      type: object
+      required: [passengerName, passengerAge]
+      properties:
+        passengerName:
+          type: string
+          minLength: 2
+          maxLength: 60
+        passengerAge:
+          type: integer
+          minimum: 1
+          maximum: 120
+    ReservationBoard:
+      type: object
+      required: [capacity, confirmedCount, waitingCount, seatsAvailable, confirmed, waiting]
+      properties:
+        capacity:
+          type: integer
+        confirmedCount:
+          type: integer
+        waitingCount:
+          type: integer
+        seatsAvailable:
+          type: integer
+        confirmed:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reservation"
+        waiting:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reservation"
+    CancellationResult:
+      type: object
+      required: [cancelledPnr, cancelledPassengerName, promotedPassenger, message]
+      properties:
+        cancelledPnr:
+          type: string
+        cancelledPassengerName:
+          type: string
+        promotedPassenger:
+          oneOf:
+            - $ref: "#/components/schemas/Reservation"
+            - type: "null"
+        message:
+          type: string
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
 

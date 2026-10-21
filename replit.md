@@ -1,44 +1,50 @@
-# [Project name]
+# Railway Ticket Reservation System
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A beginner-friendly college project demonstrating confirmed seats and a FIFO waiting list with a Java Spring Boot API and a responsive React website.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Start the **API Server** and **Railway Ticket Reservation** workflows in Replit.
+- `pnpm --filter @workspace/api-server run dev` — run the Java Spring Boot API (port 8080)
+- `pnpm --filter @workspace/railway-reservations run dev` — run the React website
+- `cd artifacts/api-server && mvn -f java/pom.xml -DskipTests package` — build the Java API
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Java 17+ and Maven are required for the backend.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Java 17+ and Spring Boot 3.4
+- React, TypeScript, Vite, and pnpm workspaces
+- OpenAPI contract with generated TypeScript client hooks
+- In-memory `ArrayList`, FIFO `ArrayDeque` queue, and `HashSet`
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/java/` — Java Spring Boot API and reservation data structures
+- `artifacts/railway-reservations/` — React reservation interface
+- `lib/api-spec/openapi.yaml` — API contract and generated client source
+- `README.md` — setup, demo steps, and presentation notes
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Reservation state stays in memory to make the data-structure operations easy to follow; server restarts clear it.
+- Confirmed seats are managed separately from the FIFO waiting queue.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Book, search, and cancel tickets; view five confirmed seats and waiting passengers; automatically promote the first waiting passenger when a confirmed seat opens.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the implementation beginner-friendly and suitable for a college presentation.
+- Use actual Java backend logic for all reservation operations.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The app's web and API workflows must both be running for reservation features to work.
+- Reservation records are not persisted across Java server restarts.
 
 ## Pointers
 

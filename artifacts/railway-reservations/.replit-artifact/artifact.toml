@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Railway Ticket Reservation"
+description = "A beginner-friendly college project demonstrating railway reservations with Java, unique PNRs, five confirmed seats, and a FIFO waiting list."
+version = "1.0.0"
+id = "artifacts/railway-reservations"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18958
+
+[services.development]
+run = "pnpm --filter @workspace/railway-reservations run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/railway-reservations", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/railway-reservations/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18958"
+BASE_PATH = "/"
